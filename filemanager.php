@@ -7,9 +7,9 @@
 // Auth with login/password (set true/false to enable/disable it)
 $use_auth = true;
 
-// Users: array('Username' => 'Password', 'Username2' => 'Password2', ...)
+// Users: array('Username' => 'PasswordHash', 'Username2' => 'PasswordHash2', ...)
 $auth_users = array(
-    'fm_admin' => 'fm_admin',
+    'fm_admin' => '$2y$10$xDBQTsc8akSBvvXJzwUDF.RONP3JaokMcQt4eAi6o67dmq2.smoQW',	// password = fm_admin
 );
 
 // Enable highlight.js (https://highlightjs.org/) on view's page
@@ -19,7 +19,7 @@ $use_highlightjs = true;
 $highlightjs_style = 'vs';
 
 // Default timezone for date() and time() - http://php.net/manual/en/timezones.php
-$default_timezone = 'Europe/Minsk'; // UTC+3
+$default_timezone = 'America/New_York'; // UTC-5
 
 // Root path for file manager
 $root_path = $_SERVER['DOCUMENT_ROOT'];
@@ -101,7 +101,7 @@ if ($use_auth) {
     } elseif (isset($_POST['fm_usr'], $_POST['fm_pwd'])) {
         // Logging In
         sleep(1);
-        if (isset($auth_users[$_POST['fm_usr']]) && $_POST['fm_pwd'] === $auth_users[$_POST['fm_usr']]) {
+        if (isset($auth_users[$_POST['fm_usr']]) && password_verify($_POST['fm_pwd'], $auth_users[$_POST['fm_usr']])) {
             $_SESSION['logged'] = $_POST['fm_usr'];
             fm_set_msg('You are logged in');
             fm_redirect(FM_SELF_URL . '?p=');
@@ -619,8 +619,8 @@ if (isset($_GET['upload'])) {
             <input type="file" name="upload[]"><br>
             <br>
             <p>
-                <button class="btn"><i class="icon-apply"></i> Upload</button> &nbsp;
-                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="icon-cancel"></i> Cancel</a></b>
+                <button class="btn"><i class="fa fa-paper-plane-o" aria-hidden="true"></i> Upload</button> &nbsp;
+                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="fa fa-times" aria-hidden="true"></i> Cancel</a></b>
             </p>
         </form>
     </div>
@@ -658,8 +658,8 @@ if (isset($_POST['copy'])) {
             </p>
             <p><label><input type="checkbox" name="move" value="1"> Move</label></p>
             <p>
-                <button class="btn"><i class="icon-apply"></i> Copy</button> &nbsp;
-                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="icon-cancel"></i> Cancel</a></b>
+                <button class="btn"><i class="fa fa-check-circle" aria-hidden="true"></i> Copy</button> &nbsp;
+                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="fa fa-times-circle" aria-hidden="true"></i> Cancel</a></b>
             </p>
         </form>
     </div>
@@ -687,21 +687,21 @@ if (isset($_GET['copy']) && !isset($_GET['finish'])) {
             Destination folder: <?php echo fm_enc(fm_convert_win(FM_ROOT_PATH . '/' . FM_PATH)) ?>
         </p>
         <p>
-            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1"><i class="icon-apply"></i> Copy</a></b> &nbsp;
-            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1&amp;move=1"><i class="icon-apply"></i> Move</a></b> &nbsp;
-            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="icon-cancel"></i> Cancel</a></b>
+            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1"><i class="fa fa-check-circle" aria-hidden="true"></i> Copy</a></b> &nbsp;
+            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1&amp;move=1"><i class="fa fa-check-circle" aria-hidden="true"></i> Move</a></b> &nbsp;
+            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="fa fa-times-circle" aria-hidden="true"></i> Cancel</a></b>
         </p>
         <p><i>Select folder:</i></p>
         <ul class="folders break-word">
             <?php
             if ($parent !== false) {
                 ?>
-                <li><a href="?p=<?php echo urlencode($parent) ?>&amp;copy=<?php echo urlencode($copy) ?>"><i class="icon-arrow_up"></i> ..</a></li>
+                <li><a href="?p=<?php echo urlencode($parent) ?>&amp;copy=<?php echo urlencode($copy) ?>"><i class="fa fa-level-up fa-rotate-270" aria-hidden="true"></i> ..</a></li>
             <?php
             }
             foreach ($folders as $f) {
                 ?>
-                <li><a href="?p=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>&amp;copy=<?php echo urlencode($copy) ?>"><i class="icon-folder"></i> <?php echo fm_enc(fm_convert_win($f)) ?></a></li>
+                <li><a href="?p=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>&amp;copy=<?php echo urlencode($copy) ?>"><i class="fa fa-folder-o" aria-hidden="true"></i> <?php echo fm_enc(fm_convert_win($f)) ?></a></li>
             <?php
             }
             ?>
@@ -805,20 +805,20 @@ if (isset($_GET['view'])) {
             ?>
         </p>
         <p>
-            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;dl=<?php echo urlencode($file) ?>"><i class="icon-download"></i> Download</a></b> &nbsp;
-            <b><a href="<?php echo fm_enc($file_url) ?>" target="_blank"><i class="icon-chain"></i> Open</a></b> &nbsp;
+            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;dl=<?php echo urlencode($file) ?>"><i class="fa fa-download" aria-hidden="true"></i> Download</a></b> &nbsp;
+            <b><a href="<?php echo fm_enc($file_url) ?>" target="_blank"><i class="fa fa-link" aria-hidden="true"></i> Open</a></b> &nbsp;
             <?php
             // ZIP actions
             if ($is_zip && $filenames !== false) {
                 $zip_name = pathinfo($file_path, PATHINFO_FILENAME);
                 ?>
-                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;unzip=<?php echo urlencode($file) ?>"><i class="icon-apply"></i> Unpack</a></b> &nbsp;
-                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;unzip=<?php echo urlencode($file) ?>&amp;tofolder=1" title="Unpack to <?php echo fm_enc($zip_name) ?>"><i class="icon-apply"></i>
+                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;unzip=<?php echo urlencode($file) ?>"><i class="fa fa-check-circle" aria-hidden="true"></i> Unpack</a></b> &nbsp;
+                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;unzip=<?php echo urlencode($file) ?>&amp;tofolder=1" title="Unpack to <?php echo fm_enc($zip_name) ?>"><i class="fa fa-check-circle" aria-hidden="true"></i>
                     Unpack to folder</a></b> &nbsp;
                 <?php
             }
             ?>
-            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="icon-goback"></i> Back</a></b>
+            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="fa fa-share fa-rotate-180" aria-hidden="true"></i> Back</a></b>
         </p>
         <?php
         if ($is_zip) {
@@ -933,8 +933,8 @@ if (isset($_GET['chmod']) && !FM_IS_WIN) {
             </table>
 
             <p>
-                <button class="btn"><i class="icon-apply"></i> Change</button> &nbsp;
-                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="icon-cancel"></i> Cancel</a></b>
+                <button class="btn"><i class="fa fa-check-circle" aria-hidden="true"></i> Change</button> &nbsp;
+                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="fa fa-times-circle" aria-hidden="true"></i> Cancel</a></b>
             </p>
 
         </form>
@@ -969,12 +969,12 @@ $all_files_size = 0;
 // link to parent folder
 if ($parent !== false) {
     ?>
-<tr><td></td><td colspan="<?php echo !FM_IS_WIN ? '6' : '4' ?>"><a href="?p=<?php echo urlencode($parent) ?>"><i class="icon-arrow_up"></i> ..</a></td></tr>
+<tr><td></td><td colspan="<?php echo !FM_IS_WIN ? '6' : '4' ?>"><a href="?p=<?php echo urlencode($parent) ?>"><i class="fa fa-level-up fa-rotate-270" aria-hidden="true"></i> ..</a></td></tr>
 <?php
 }
 foreach ($folders as $f) {
     $is_link = is_link($path . '/' . $f);
-    $img = $is_link ? 'icon-link_folder' : 'icon-folder';
+    $img = $is_link ? 'fa fa-folder' : 'fa fa-folder-o';
     $modif = date(FM_DATETIME_FORMAT, filemtime($path . '/' . $f));
     $perms = substr(decoct(fileperms($path . '/' . $f)), -4);
     if (function_exists('posix_getpwuid') && function_exists('posix_getgrgid')) {
@@ -987,17 +987,17 @@ foreach ($folders as $f) {
     ?>
 <tr>
 <td><label><input type="checkbox" name="file[]" value="<?php echo fm_enc($f) ?>"></label></td>
-<td><div class="filename"><a href="?p=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="<?php echo $img ?>"></i> <?php echo fm_enc(fm_convert_win($f)) ?></a><?php echo ($is_link ? ' &rarr; <i>' . fm_enc(readlink($path . '/' . $f)) . '</i>' : '') ?></div></td>
+<td><div class="filename"><a href="?p=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="<?php echo $img ?>" aria-hidden="true"></i> <?php echo fm_enc(fm_convert_win($f)) ?></a><?php echo ($is_link ? ' &rarr; <i>' . fm_enc(readlink($path . '/' . $f)) . '</i>' : '') ?></div></td>
 <td>Folder</td><td><?php echo $modif ?></td>
 <?php if (!FM_IS_WIN): ?>
 <td><a title="Change Permissions" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a></td>
 <td><?php echo fm_enc($owner['name'] . ':' . $group['name']) ?></td>
 <?php endif; ?>
-<td>
-<a title="Delete" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('Delete folder?');"><i class="icon-cross"></i></a>
-<a title="Rename" href="#" onclick="rename('<?php echo fm_enc(FM_PATH) ?>', '<?php echo fm_enc($f) ?>');return false;"><i class="icon-rename"></i></a>
-<a title="Copy to..." href="?p=&amp;copy=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="icon-copy"></i></a>
-<a title="Direct link" href="<?php echo fm_enc(FM_ROOT_URL . (FM_PATH != '' ? '/' . FM_PATH : '') . '/' . $f . '/') ?>" target="_blank"><i class="icon-chain"></i></a>
+<td class="acticns">
+<a title="Delete" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('Delete folder?');"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
+<a title="Rename" href="#" onclick="rename('<?php echo fm_enc(FM_PATH) ?>', '<?php echo fm_enc($f) ?>');return false;"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+<a title="Copy to..." href="?p=&amp;copy=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="fa fa-files-o" aria-hidden="true"></i></a>
+<a title="Direct link" href="<?php echo fm_enc(FM_ROOT_URL . (FM_PATH != '' ? '/' . FM_PATH : '') . '/' . $f . '/') ?>" target="_blank"><i class="fa fa-link" aria-hidden="true"></i></a>
 </td></tr>
     <?php
     flush();
@@ -1005,7 +1005,7 @@ foreach ($folders as $f) {
 
 foreach ($files as $f) {
     $is_link = is_link($path . '/' . $f);
-    $img = $is_link ? 'icon-link_file' : fm_get_file_icon_class($path . '/' . $f);
+    $img = $is_link ? 'fa fa-file" aria-hidden="true' : fm_get_file_icon_class($path . '/' . $f);
     $modif = date(FM_DATETIME_FORMAT, filemtime($path . '/' . $f));
     $filesize_raw = filesize($path . '/' . $f);
     $filesize = fm_get_filesize($filesize_raw);
@@ -1029,12 +1029,12 @@ foreach ($files as $f) {
 <td><a title="Change Permissions" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a></td>
 <td><?php echo fm_enc($owner['name'] . ':' . $group['name']) ?></td>
 <?php endif; ?>
-<td>
-<a title="Delete" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('Delete file?');"><i class="icon-cross"></i></a>
-<a title="Rename" href="#" onclick="rename('<?php echo fm_enc(FM_PATH) ?>', '<?php echo fm_enc($f) ?>');return false;"><i class="icon-rename"></i></a>
-<a title="Copy to..." href="?p=<?php echo urlencode(FM_PATH) ?>&amp;copy=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="icon-copy"></i></a>
-<a title="Direct link" href="<?php echo fm_enc(FM_ROOT_URL . (FM_PATH != '' ? '/' . FM_PATH : '') . '/' . $f) ?>" target="_blank"><i class="icon-chain"></i></a>
-<a title="Download" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;dl=<?php echo urlencode($f) ?>"><i class="icon-download"></i></a>
+<td class="acticns">
+<a title="Delete" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('Delete file?');"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
+<a title="Rename" href="#" onclick="rename('<?php echo fm_enc(FM_PATH) ?>', '<?php echo fm_enc($f) ?>');return false;"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+<a title="Copy to..." href="?p=<?php echo urlencode(FM_PATH) ?>&amp;copy=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="fa fa-files-o" aria-hidden="true"></i></a>
+<a title="Direct link" href="<?php echo fm_enc(FM_ROOT_URL . (FM_PATH != '' ? '/' . FM_PATH : '') . '/' . $f) ?>" target="_blank"><i class="fa fa-link" aria-hidden="true"></i></a>
+<a title="Download" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;dl=<?php echo urlencode($f) ?>"><i class="fa fa-download" aria-hidden="true"></i></a>
 </td></tr>
     <?php
     flush();
@@ -1055,9 +1055,9 @@ folders: <?php echo $num_folders ?>
 }
 ?>
 </table>
-<p class="path"><a href="#" onclick="select_all();return false;"><i class="icon-checkbox"></i> Select all</a> &nbsp;
-<a href="#" onclick="unselect_all();return false;"><i class="icon-checkbox_uncheck"></i> Unselect all</a> &nbsp;
-<a href="#" onclick="invert_all();return false;"><i class="icon-checkbox_invert"></i> Invert selection</a></p>
+<p class="path"><a href="#" onclick="select_all();return false;"><i class="fa fa-check-square-o" aria-hidden="true"></i> Select all</a> &nbsp;
+<a href="#" onclick="unselect_all();return false;"><i class="fa fa-square-o" aria-hidden="true"></i> Unselect all</a> &nbsp;
+<a href="#" onclick="invert_all();return false;"><i class="fa fa-exchange" aria-hidden="true"></i> Invert selection</a></p>
 <p><input type="submit" name="delete" value="Delete" onclick="return confirm('Delete selected files and folders?')">
 <input type="submit" name="zip" value="Pack" onclick="return confirm('Create archive?')">
 <input type="submit" name="copy" value="Copy"></p>
@@ -1392,50 +1392,50 @@ function fm_get_file_icon_class($path)
         case 'ico': case 'gif': case 'jpg': case 'jpeg': case 'jpc': case 'jp2':
         case 'jpx': case 'xbm': case 'wbmp': case 'png': case 'bmp': case 'tif':
         case 'tiff':
-            $img = 'icon-file_image';
+            $img = 'file-image-o';
             break;
         case 'txt': case 'css': case 'ini': case 'conf': case 'log': case 'htaccess':
         case 'passwd': case 'ftpquota': case 'sql': case 'js': case 'json': case 'sh':
         case 'config': case 'twig': case 'tpl': case 'md': case 'gitignore':
         case 'less': case 'sass': case 'scss': case 'c': case 'cpp': case 'cs': case 'py':
         case 'map': case 'lock': case 'dtd':
-            $img = 'icon-file_text';
+            $img = 'file-text-o';
             break;
         case 'zip': case 'rar': case 'gz': case 'tar': case '7z':
-            $img = 'icon-file_zip';
+            $img = 'file-archive-o';
             break;
         case 'php': case 'php4': case 'php5': case 'phps': case 'phtml':
-            $img = 'icon-file_php';
+            $img = 'file-code-o';
             break;
         case 'htm': case 'html': case 'shtml': case 'xhtml':
-            $img = 'icon-file_html';
+            $img = 'file-code-o';
             break;
         case 'xml': case 'xsl': case 'svg':
-            $img = 'icon-file_code';
+            $img = 'file-code-o';
             break;
         case 'wav': case 'mp3': case 'mp2': case 'm4a': case 'aac': case 'ogg':
         case 'oga': case 'wma': case 'mka': case 'flac': case 'ac3': case 'tds':
-            $img = 'icon-file_music';
+            $img = 'file-audio-o';
             break;
         case 'm3u': case 'm3u8': case 'pls': case 'cue':
-            $img = 'icon-file_playlist';
+            $img = 'file-audio-o';
             break;
         case 'avi': case 'mpg': case 'mpeg': case 'mp4': case 'm4v': case 'flv':
         case 'f4v': case 'ogm': case 'ogv': case 'mov': case 'mkv': case '3gp':
         case 'asf': case 'wmv':
-            $img = 'icon-file_film';
+            $img = 'file-video-o';
             break;
         case 'eml': case 'msg':
             $img = 'icon-file_outlook';
             break;
         case 'xls': case 'xlsx':
-            $img = 'icon-file_excel';
+            $img = 'file-excel-o';
             break;
         case 'csv':
             $img = 'icon-file_csv';
             break;
         case 'doc': case 'docx':
-            $img = 'icon-file_word';
+            $img = 'file-word-o';
             break;
         case 'ppt': case 'pptx':
             $img = 'icon-file_powerpoint';
@@ -1444,7 +1444,7 @@ function fm_get_file_icon_class($path)
             $img = 'icon-file_font';
             break;
         case 'pdf':
-            $img = 'icon-file_pdf';
+            $img = 'file-pdf-o';
             break;
         case 'psd':
             $img = 'icon-file_photoshop';
@@ -1465,10 +1465,10 @@ function fm_get_file_icon_class($path)
             $img = 'icon-file_terminal';
             break;
         default:
-            $img = 'icon-document';
+            $img = 'file-o';
     }
 
-    return $img;
+    return 'fa fa-' . $img . '" aria-hidden="true';
 }
 
 /**
@@ -1660,14 +1660,14 @@ function fm_show_nav_path($path)
     ?>
 <div class="path">
 <div class="float-right">
-<a title="Upload files" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;upload"><i class="icon-upload"></i></a>
-<a title="New folder" href="#" onclick="newfolder('<?php echo fm_enc(FM_PATH) ?>');return false;"><i class="icon-folder_add"></i></a>
-<?php if (FM_USE_AUTH): ?><a title="Logout" href="?logout=1"><i class="icon-logout"></i></a><?php endif; ?>
+<a title="Upload files" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;upload"><i class="fa fa-cloud-upload" aria-hidden="true"></i></a>
+<a title="New folder" href="#" onclick="newfolder('<?php echo fm_enc(FM_PATH) ?>');return false;"><i class="fa fa-plus-square" aria-hidden="true"></i></a>
+<?php if (FM_USE_AUTH): ?><a title="Logout" href="?logout=1"><i class="fa fa-sign-out" aria-hidden="true"></i></a><?php endif; ?>
 </div>
         <?php
         $path = fm_clean_path($path);
-        $root_url = "<a href='?p='><i class='icon-home' title='" . FM_ROOT_PATH . "'></i></a>";
-        $sep = '<i class="icon-separator"></i>';
+        $root_url = "<a href='?p='><i class='fa fa-home' title='" . FM_ROOT_PATH . "' aria-hidden='true'></i></a>";
+        $sep = ' <i class="fa fa-angle-right" aria-hidden="true"></i> ';
         if ($path != '') {
             $exploded = explode('/', $path);
             $count = count($exploded);
@@ -1704,7 +1704,6 @@ function fm_show_message()
  */
 function fm_show_header()
 {
-    $sprites_ver = '20160315';
     header("Content-Type: text/html; charset=utf-8");
     header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
     header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
@@ -1732,6 +1731,8 @@ pre.with-hljs code{margin:0;border:0;overflow:visible}
 code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;padding:0}
 #wrapper{max-width:1000px;min-width:400px;margin:10px auto}
 .path{padding:4px 7px;border:1px solid #ddd;background-color:#fff;margin-bottom:10px}
+.path i{font-size:large}
+.acticns{font-size:larger}
 .right{text-align:right}.center{text-align:center}.float-right{float:right}
 .message{padding:4px 7px;border:1px solid #ddd;background-color:#fff}
 .message.ok{border-color:green;color:green}
@@ -1740,35 +1741,14 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
 .btn{border:0;background:none;padding:0;margin:0;font-weight:bold;color:#296ea3;cursor:pointer}.btn:hover{color:#b00}
 .preview-img{max-width:100%;background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAKklEQVR42mL5//8/Azbw+PFjrOJMDCSCUQ3EABZc4S0rKzsaSvTTABBgAMyfCMsY4B9iAAAAAElFTkSuQmCC") repeat 0 0}
 .preview-video{position:relative;max-width:100%;height:0;padding-bottom:62.5%;margin-bottom:10px}.preview-video video{position:absolute;width:100%;height:100%;left:0;top:0;background:#000}
-[class*="icon-"]{display:inline-block;width:16px;height:16px;background:url("<?php echo FM_SELF_URL ?>?img=sprites&amp;t=<?php echo $sprites_ver ?>") no-repeat 0 0;vertical-align:bottom}
-.icon-document{background-position:-16px 0}.icon-folder{background-position:-32px 0}
-.icon-folder_add{background-position:-48px 0}.icon-upload{background-position:-64px 0}
-.icon-arrow_up{background-position:-80px 0}.icon-home{background-position:-96px 0}
-.icon-separator{background-position:-112px 0}.icon-cross{background-position:-128px 0}
-.icon-copy{background-position:-144px 0}.icon-apply{background-position:-160px 0}
-.icon-cancel{background-position:-176px 0}.icon-rename{background-position:-192px 0}
-.icon-checkbox{background-position:-208px 0}.icon-checkbox_invert{background-position:-224px 0}
-.icon-checkbox_uncheck{background-position:-240px 0}.icon-download{background-position:-256px 0}
-.icon-goback{background-position:-272px 0}.icon-folder_open{background-position:-288px 0}
-.icon-file_application{background-position:0 -16px}.icon-file_code{background-position:-16px -16px}
-.icon-file_csv{background-position:-32px -16px}.icon-file_excel{background-position:-48px -16px}
-.icon-file_film{background-position:-64px -16px}.icon-file_flash{background-position:-80px -16px}
-.icon-file_font{background-position:-96px -16px}.icon-file_html{background-position:-112px -16px}
-.icon-file_illustrator{background-position:-128px -16px}.icon-file_image{background-position:-144px -16px}
-.icon-file_music{background-position:-160px -16px}.icon-file_outlook{background-position:-176px -16px}
-.icon-file_pdf{background-position:-192px -16px}.icon-file_photoshop{background-position:-208px -16px}
-.icon-file_php{background-position:-224px -16px}.icon-file_playlist{background-position:-240px -16px}
-.icon-file_powerpoint{background-position:-256px -16px}.icon-file_swf{background-position:-272px -16px}
-.icon-file_terminal{background-position:-288px -16px}.icon-file_text{background-position:-304px -16px}
-.icon-file_word{background-position:-320px -16px}.icon-file_zip{background-position:-336px -16px}
-.icon-logout{background-position:-304px 0}.icon-chain{background-position:-320px 0}
-.icon-link_folder{background-position:-352px -16px}.icon-link_file{background-position:-368px -16px}
 .compact-table{border:0;width:auto}.compact-table td,.compact-table th{width:100px;border:0;text-align:center}.compact-table tr:hover td{background-color:#fff}
 .filename{max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.filename i{font-size:larger}
 .break-word{word-wrap:break-word}
 </style>
 <link rel="icon" href="<?php echo FM_SELF_URL ?>?img=favicon" type="image/png">
 <link rel="shortcut icon" href="<?php echo FM_SELF_URL ?>?img=favicon" type="image/png">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <?php if (isset($_GET['view']) && FM_USE_HIGHLIGHTJS): ?>
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/styles/<?php echo FM_HIGHLIGHTJS_STYLE ?>.min.css">
 <?php endif; ?>
@@ -1859,91 +1839,6 @@ Z4ZDDfsLiwER45xDEATgOI6KntfDd091GidzC8vZ4vH1QQ09+4MSMAMWRREKPMhmsyr6voYmrnb2
 PKEizdEabUaeFCDKCCHAdV0wTVNFznMgpVqGlZ2cipzHGtKSZwCIZJgJwxB38KHT6Sjx21V75Jcn
 LXmGAKTRpGVZUx2dAqQzSEqw9kqwuGqONTufPrw37D8lQFxCvjgPXIixANLEGfwuQacMOC4kZz+q
 GdhJS550BjpRCdCbAJCMJRkMASEIg+4Bxz4JwAwDSEueAYDLIM+QrOk6GHiRxjXSkJY8KUCvdXZ6
-kbuvNx+mOcbN9taGBlpLAWf9nX8EGADoCfqkKWV/cgAAAABJRU5ErkJggg==',
-        'sprites' => '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
-RK5CYII=',
+kbuvNx+mOcbN9taGBlpLAWf9nX8EGADoCfqkKWV/cgAAAABJRU5ErkJggg=='
     );
 }
