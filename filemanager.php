@@ -18,6 +18,9 @@ $use_highlightjs = true;
 // highlight.js style
 $highlightjs_style = 'vs';
 
+// Enable ace.js (https://ace.c9.io/) on view's page
+$edit_files = true;
+
 // Default timezone for date() and time() - http://php.net/manual/en/timezones.php
 $default_timezone = 'America/New_York'; // UTC-5
 
@@ -145,7 +148,7 @@ $p = fm_clean_path($p);
 // instead globals vars
 define('FM_PATH', $p);
 define('FM_USE_AUTH', $use_auth);
-
+define('FM_EDIT_FILE', $edit_files);
 defined('FM_ICONV_INPUT_ENC') || define('FM_ICONV_INPUT_ENC', $iconv_input_encoding);
 defined('FM_USE_HIGHLIGHTJS') || define('FM_USE_HIGHLIGHTJS', $use_highlightjs);
 defined('FM_HIGHLIGHTJS_STYLE') || define('FM_HIGHLIGHTJS_STYLE', $highlightjs_style);
@@ -154,6 +157,22 @@ defined('FM_DATETIME_FORMAT') || define('FM_DATETIME_FORMAT', $datetime_format);
 unset($p, $use_auth, $iconv_input_encoding, $use_highlightjs, $highlightjs_style);
 
 /*************************** ACTIONS ***************************/
+
+//AJAX Request
+if (isset($_POST['ajax'])) {
+
+	//backup files
+	if (isset($_POST['type']) && $_POST['type']=="backup") {
+		$file = $_POST['file'];
+		$path = $_POST['path'];
+		$date = date("dMy-His");
+		$newFile = $file.'-'.$date.'.bak';
+		copy($path.'/'.$file, $path.'/'.$newFile) or die("Unable to backup");
+		echo "Backup $newFile Created";
+	}
+
+	exit;
+}
 
 // Delete file / folder
 if (isset($_GET['del'])) {
@@ -807,6 +826,7 @@ if (isset($_GET['view'])) {
         <p>
             <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;dl=<?php echo urlencode($file) ?>"><i class="fa fa-download" aria-hidden="true"></i> Download</a></b> &nbsp;
             <b><a href="<?php echo fm_enc($file_url) ?>" target="_blank"><i class="fa fa-link" aria-hidden="true"></i> Open</a></b> &nbsp;
+            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;edit=<?php echo urlencode($file) ?>"><i class="fa fa-pencil" aria-hidden="true"></i> Edit</a></b> &nbsp;
             <?php
             // ZIP actions
             if ($is_zip && $filenames !== false) {
@@ -876,6 +896,65 @@ if (isset($_GET['view'])) {
     fm_show_footer();
     exit;
 }
+
+
+// file editor
+if (isset($_GET['edit']) && FM_EDIT_FILE) {
+	$file = $_GET['edit'];
+	$file = fm_clean_path($file);
+	$file = str_replace('/', '', $file);
+	if ($file == '' || !is_file($path . '/' . $file)) {
+		fm_set_msg('File not found', 'error');
+		fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
+	}
+
+	$file_url = FM_ROOT_URL . fm_convert_win((FM_PATH != '' ? '/' . FM_PATH : '') . '/' . $file);
+	$file_path = $path . '/' . $file;
+
+	//Save File
+	if (isset($_POST['savedata'])) {
+		$writedata = $_POST['savedata'];
+		$fd=fopen($file_path, 'w');
+		@fwrite($fd, $writedata);
+		fclose($fd);
+		fm_set_msg('File Saved Successfully');
+	}
+
+	fm_show_header(); // HEADER
+	fm_show_nav_path(FM_PATH); // current path
+	fm_show_message();
+
+	$ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
+	$mime_type = fm_get_mime_type($file_path);
+	$filesize = filesize($file_path);
+	$is_text = false;
+	$content = ''; // for text
+
+	if (in_array($ext, fm_get_text_exts()) || substr($mime_type, 0, 4) == 'text' || in_array($mime_type, fm_get_text_mimes())) {
+		$is_text = true;
+		$content = file_get_contents($file_path);
+	}
+
+	?>
+	<div class="path">
+		<div class="edit-file-actions">
+			<a title="Cancel" href="?p=<?php echo urlencode(trim(FM_PATH)) ?>&amp;view=<?php echo urlencode($file) ?>"><i class="fa fa-reply-all" aria-hidden="true"></i> Cancel</a>
+			<a title="Backup" href="javascript:backup('<?php echo urlencode($path) ?>','<?php echo urlencode($file) ?>')"><i class="fa fa-database" aria-hidden="true"></i> Backup</a>
+			<button type="button" name="Save" data-url="<?php echo fm_enc($file_url) ?>" onclick="edit_save(this,'ace')"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</button>
+		</div>
+		<?php
+		if ($is_text) {
+			echo '<div id="editor" contenteditable="true">'. htmlspecialchars($content) .'</div>';
+		} else {
+			fm_set_msg('FILE EXTENSION HAS NOT SUPPORTED', 'error');
+		}
+		?>
+	</div>
+	<?php
+    fm_show_footer();
+    exit;
+}
+
 
 // chmod (not for Windows)
 if (isset($_GET['chmod']) && !FM_IS_WIN) {
@@ -1658,7 +1737,7 @@ class FM_Zipper
 function fm_show_nav_path($path)
 {
     ?>
-<div class="path">
+<div class="path nav">
 <div class="float-right">
 <a title="Upload files" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;upload"><i class="fa fa-cloud-upload" aria-hidden="true"></i></a>
 <a title="New folder" href="#" onclick="newfolder('<?php echo fm_enc(FM_PATH) ?>');return false;"><i class="fa fa-plus-square" aria-hidden="true"></i></a>
@@ -1716,7 +1795,7 @@ function fm_show_header()
 <title>PHP File Manager</title>
 <style>
 html,body,div,span,p,pre,a,code,em,img,small,strong,ol,ul,li,form,label,table,tr,th,td{margin:0;padding:0;vertical-align:baseline;outline:none;font-size:100%;background:transparent;border:none;text-decoration:none}
-html{overflow-y:scroll}body{padding:0;font:13px/16px Tahoma,Arial,sans-serif;color:#222;background:#efefef}
+html{overflow-y:scroll}body{padding:0;font:13px/16px Tahoma,Arial,sans-serif;color:#222;background:#d8d8d8}
 input,select,textarea,button{font-size:inherit;font-family:inherit}
 a{color:#296ea3;text-decoration:none}a:hover{color:#b00}img{vertical-align:middle;border:none}
 a img{border:none}span.gray{color:#777}small{font-size:11px;color:#999}p{margin-bottom:10px}
@@ -1729,15 +1808,18 @@ code,pre{display:block;margin-bottom:10px;font:13px/16px Consolas,'Courier New',
 pre.with-hljs{padding:0}
 pre.with-hljs code{margin:0;border:0;overflow:visible}
 code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;padding:0}
-#wrapper{max-width:1000px;min-width:400px;margin:10px auto}
+#wrapper{min-width:400px;margin:10px auto;padding-left:10px;padding-right:10px}
 .path{padding:4px 7px;border:1px solid #ddd;background-color:#fff;margin-bottom:10px}
-.path i{font-size:large}
+.path.nav i{font-size:large}
+.path.nav .float-right a{margin-left:.5em}
 .acticns{font-size:larger}
 .right{text-align:right}.center{text-align:center}.float-right{float:right}
 .message{padding:4px 7px;border:1px solid #ddd;background-color:#fff}
-.message.ok{border-color:green;color:green}
+.message.ok{border-color:green;background-color:rgba(0,200,0,0.5)}
 .message.error{border-color:red;color:red}
 .message.alert{border-color:orange;color:orange}
+p.message{position:absolute;right:12px;left:12px;text-align:center;z-index:100;transition: opacity .5s}
+p.message.done{opacity:0};
 .btn{border:0;background:none;padding:0;margin:0;font-weight:bold;color:#296ea3;cursor:pointer}.btn:hover{color:#b00}
 .preview-img{max-width:100%;background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAKklEQVR42mL5//8/Azbw+PFjrOJMDCSCUQ3EABZc4S0rKzsaSvTTABBgAMyfCMsY4B9iAAAAAElFTkSuQmCC") repeat 0 0}
 .preview-video{position:relative;max-width:100%;height:0;padding-bottom:62.5%;margin-bottom:10px}.preview-video video{position:absolute;width:100%;height:100%;left:0;top:0;background:#000}
@@ -1745,6 +1827,10 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
 .filename{max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .filename i{font-size:larger}
 .break-word{word-wrap:break-word}
+#editor,.edit-file-actions{position:absolute;right:12px}
+#editor{top:50px;bottom:5px;left:10px}
+.edit-file-actions{top:7px;background:#fff;margin-top:5px}
+.edit-file-actions>a,.edit-file-actions>button{background:#fff;padding:3px 15px;cursor:pointer;color:#296ea3;border:1px solid #296ea3}
 </style>
 <link rel="icon" href="<?php echo FM_SELF_URL ?>?img=favicon" type="image/png">
 <link rel="shortcut icon" href="<?php echo FM_SELF_URL ?>?img=favicon" type="image/png">
@@ -1775,10 +1861,31 @@ function select_all(){var l=get_checkboxes();change_checkboxes(l,true);}
 function unselect_all(){var l=get_checkboxes();change_checkboxes(l,false);}
 function invert_all(){var l=get_checkboxes();change_checkboxes(l);}
 function checkbox_toggle(){var l=get_checkboxes();l.push(this);change_checkboxes(l);}
+setTimeout(function(){document.getElementsByClassName("message")[0].className += " done";}, 5000);
 </script>
 <?php if (isset($_GET['view']) && FM_USE_HIGHLIGHTJS): ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/highlight.min.js"></script>
 <script>hljs.initHighlightingOnLoad();</script>
+<?php endif; ?>
+<?php if (isset($_GET['edit']) && FM_EDIT_FILE): ?>
+<script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ace.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ext-language_tools.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.2.9/ext-modelist.js"></script>
+<script>
+function backup(e,t){var n=new XMLHttpRequest,a="path="+e+"&file="+t+"&type=backup&ajax=true";return n.open("POST","",!0),n.setRequestHeader("Content-type","application/x-www-form-urlencoded"),n.onreadystatechange=function(){4==n.readyState&&200==n.status&&alert(n.responseText)},n.send(a),!1}function edit_save(e,t){editor.session.isSaving=true;var n=editor.getSession().getValue();if(n){var a=document.createElement("form");a.setAttribute("method","POST"),a.setAttribute("action","");var o=document.createElement("textarea");o.setAttribute("type","textarea"),o.setAttribute("name","savedata");var c=document.createTextNode(n);o.appendChild(c),a.appendChild(o),document.body.appendChild(a),a.submit()}}
+var editor = ace.edit("editor");//editor.getSession().setMode("ace/mode/javascript");
+editor.setTheme("ace/theme/sqlserver");
+var modelist = ace.require("ace/ext/modelist");
+var filePath = "<?php echo $_GET['edit']; ?>";
+var mode = modelist.getModeForPath(filePath).mode;
+editor.session.setMode(mode); // mode now contains "ace/mode/javascript".
+window.addEventListener("beforeunload", function (e) {
+	if (!editor.session.getUndoManager().hasUndo() || editor.session.isSaving) return;
+	var confirmationMessage = "You have not saved changes to this document.";
+	(e || window.event).returnValue = confirmationMessage;	//Gecko + IE
+	return confirmationMessage								//Webkit, Safari, Chrome etc.
+});
+</script>
 <?php endif; ?>
 </body>
 </html>
