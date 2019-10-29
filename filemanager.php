@@ -8,6 +8,7 @@
 $use_auth = true;
 
 // Users: array('Username' => 'PasswordHash', 'Username2' => 'PasswordHash2', ...)
+// Usernames lower case
 $auth_users = array(
     'fm_admin' => '$2y$10$xDBQTsc8akSBvvXJzwUDF.RONP3JaokMcQt4eAi6o67dmq2.smoQW',	// password = fm_admin
 );
@@ -104,8 +105,9 @@ if ($use_auth) {
     } elseif (isset($_POST['fm_usr'], $_POST['fm_pwd'])) {
         // Logging In
         sleep(1);
-        if (isset($auth_users[$_POST['fm_usr']]) && password_verify($_POST['fm_pwd'], $auth_users[$_POST['fm_usr']])) {
-            $_SESSION['logged'] = $_POST['fm_usr'];
+        $lcun = strtolower($_POST['fm_usr']);
+        if (isset($auth_users[$lcun]) && password_verify($_POST['fm_pwd'], $auth_users[$lcun])) {
+            $_SESSION['logged'] = $lcun;
             fm_set_msg('You are logged in');
             fm_redirect(FM_SELF_URL . '?p=');
         } else {
@@ -921,8 +923,8 @@ if (isset($_GET['edit']) && FM_EDIT_FILE) {
 	}
 
 	fm_show_header(); // HEADER
-	fm_show_nav_path(FM_PATH); // current path
 	fm_show_message();
+	fm_show_nav_path(FM_PATH); // current path
 
 	$ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
 	$mime_type = fm_get_mime_type($file_path);
@@ -1026,10 +1028,10 @@ if (isset($_GET['chmod']) && !FM_IS_WIN) {
 
 //--- FILEMANAGER MAIN
 fm_show_header(); // HEADER
-fm_show_nav_path(FM_PATH); // current path
-
 // messages
 fm_show_message();
+fm_show_nav_path(FM_PATH); // current path
+
 
 $num_files = count($files);
 $num_folders = count($folders);
@@ -1814,12 +1816,12 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
 .path.nav .float-right a{margin-left:.5em}
 .acticns{font-size:larger}
 .right{text-align:right}.center{text-align:center}.float-right{float:right}
-.message{padding:4px 7px;border:1px solid #ddd;background-color:#fff}
-.message.ok{border-color:green;background-color:rgba(0,200,0,0.5)}
+.message{padding:16px 7px;border:1px solid #ddd;background-color:#fff}
+.message.ok{border-color:green;color:green}
 .message.error{border-color:red;color:red}
 .message.alert{border-color:orange;color:orange}
-p.message{position:absolute;right:12px;left:12px;text-align:center;z-index:100;transition: opacity .5s}
-p.message.done{opacity:0};
+p.message{position:absolute;right:12px;left:12px;text-align:center;z-index:100;transition: all .5s}
+p.message.done{opacity:0;padding:0;margin:0;height:0};
 .btn{border:0;background:none;padding:0;margin:0;font-weight:bold;color:#296ea3;cursor:pointer}.btn:hover{color:#b00}
 .preview-img{max-width:100%;background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAKklEQVR42mL5//8/Azbw+PFjrOJMDCSCUQ3EABZc4S0rKzsaSvTTABBgAMyfCMsY4B9iAAAAAElFTkSuQmCC") repeat 0 0}
 .preview-video{position:relative;max-width:100%;height:0;padding-bottom:62.5%;margin-bottom:10px}.preview-video video{position:absolute;width:100%;height:100%;left:0;top:0;background:#000}
@@ -1861,7 +1863,7 @@ function select_all(){var l=get_checkboxes();change_checkboxes(l,true);}
 function unselect_all(){var l=get_checkboxes();change_checkboxes(l,false);}
 function invert_all(){var l=get_checkboxes();change_checkboxes(l);}
 function checkbox_toggle(){var l=get_checkboxes();l.push(this);change_checkboxes(l);}
-setTimeout(function(){document.getElementsByClassName("message")[0].className += " done";}, 5000);
+setTimeout(function(){document.getElementsByClassName("message")[0].className += " done";}, 3000);
 </script>
 <?php if (isset($_GET['view']) && FM_USE_HIGHLIGHTJS): ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/highlight.min.js"></script>
