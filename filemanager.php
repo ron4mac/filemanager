@@ -123,7 +123,7 @@ if ($use_auth) {
         ?>
         <div class="path">
             <form action="" method="post" style="margin:10px;text-align:center">
-                <input name="fm_usr" value="" placeholder="Username" required>
+                <input name="fm_usr" value="" placeholder="Username" required autofocus>
                 <input type="password" name="fm_pwd" value="" placeholder="Password" required>
                 <input type="submit" value="Login">
             </form>
