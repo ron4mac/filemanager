@@ -43,6 +43,11 @@ $datetime_format = 'd.m.y H:i';
 
 //--- EDIT BELOW CAREFULLY OR DO NOT EDIT AT ALL
 
+$fmcf = './fmcfg.php';
+if (file_exists($fmcf)) {
+	@include $fmcf;
+}
+
 // if fm included
 if (defined('FM_EMBED')) {
     $use_auth = false;
@@ -60,7 +65,7 @@ if (defined('FM_EMBED')) {
     }
 
     session_cache_limiter('');
-    session_name('filemanager');
+    session_name('fm'.substr(sha1(__FILE__), -30));
     session_start();
 }
 
@@ -1820,7 +1825,7 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
 .message.ok{border-color:green;color:green}
 .message.error{border-color:red;color:red}
 .message.alert{border-color:orange;color:orange}
-p.message{position:absolute;right:12px;left:12px;text-align:center;z-index:100;transition: all .5s}
+p.message{position:absolute;right:10px;left:10px;padding:.7em;text-align:center;z-index:100;transition: all .5s}
 p.message.done{opacity:0;padding:0;margin:0;height:0};
 .btn{border:0;background:none;padding:0;margin:0;font-weight:bold;color:#296ea3;cursor:pointer}.btn:hover{color:#b00}
 .preview-img{max-width:100%;background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAKklEQVR42mL5//8/Azbw+PFjrOJMDCSCUQ3EABZc4S0rKzsaSvTTABBgAMyfCMsY4B9iAAAAAElFTkSuQmCC") repeat 0 0}
@@ -1863,7 +1868,8 @@ function select_all(){var l=get_checkboxes();change_checkboxes(l,true);}
 function unselect_all(){var l=get_checkboxes();change_checkboxes(l,false);}
 function invert_all(){var l=get_checkboxes();change_checkboxes(l);}
 function checkbox_toggle(){var l=get_checkboxes();l.push(this);change_checkboxes(l);}
-setTimeout(function(){document.getElementsByClassName("message")[0].className += " done";}, 3000);
+const msgDiv = document.getElementsByClassName("message")[0];
+if (msgDiv) setTimeout(function(){msgDiv.className += " done";}, 3000);
 </script>
 <?php if (isset($_GET['view']) && FM_USE_HIGHLIGHTJS): ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/highlight.min.js"></script>

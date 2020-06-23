@@ -1,5 +1,2 @@
-.DS_Store
-.buildpath
-.project
-.settings
-.idea
+.git*
+fmcfg.php
