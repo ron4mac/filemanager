@@ -10,7 +10,7 @@ $use_auth = true;
 
 // Users: array('Username' => 'PasswordHash', 'Username2' => 'PasswordHash2', ...)
 // Usernames lower case
-$auth_users = [
+if (!isset($auth_users)) $auth_users = [
 	'fm_admin' => '$2y$10$xDBQTsc8akSBvvXJzwUDF.RONP3JaokMcQt4eAi6o67dmq2.smoQW',	// password = fm_admin
 ];
 
@@ -27,11 +27,11 @@ $edit_files = true;
 $default_timezone = 'America/New_York'; // UTC-5
 
 // Root path for file manager
-$root_path = $_SERVER['DOCUMENT_ROOT'];
+if (!isset($root_path)) $root_path = $_SERVER['DOCUMENT_ROOT'];
 
 // Root url for links in file manager.Relative to $http_host. Variants: '', 'path/to/subfolder'
 // Will not working if $root_path will be outside of server document root
-$root_url = '';
+if (!isset($root_url)) $root_url = '';
 
 // Server hostname. Can set manually if wrong
 $http_host = $_SERVER['HTTP_HOST'];
@@ -1368,7 +1368,7 @@ class FM_Zipper
 
 	public function __construct()
 	{
-		$this->zip = new ZipArchive();
+		$this->zip = new \ZipArchive();
 	}
 
 	/**
@@ -1379,7 +1379,7 @@ class FM_Zipper
 	 */
 	public function create($filename, $files)
 	{
-		$res = $this->zip->open($filename, ZipArchive::CREATE);
+		$res = $this->zip->open($filename, \ZipArchive::CREATE);
 		if ($res !== true) {
 			return false;
 		}
