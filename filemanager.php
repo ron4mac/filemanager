@@ -65,9 +65,11 @@ if (defined('FM_EMBED')) {
 		mb_regex_encoding('UTF-8');
 	}
 
-	session_cache_limiter('');
-	session_name('fm'.substr(sha1(__FILE__), -30));
-	session_start();
+	if (session_status() == PHP_SESSION_NONE) {
+		session_cache_limiter('');
+		session_name('fm'.substr(sha1(__FILE__), -30));
+		session_start();
+	}
 }
 
 if (empty($auth_users)) {
@@ -676,7 +678,7 @@ if (isset($_POST['copy'])) {
 			foreach ($copy_files as $cf) {
 				echo '<input type="hidden" name="file[]" value="' . fm_enc($cf) . '">' . PHP_EOL;
 			}
-			$copy_files_enc = array_map('fm_enc', $copy_files);
+			$copy_files_enc = array_map('fmgr\fm_enc', $copy_files);
 			?>
 			<p class="break-word">Files: <b><?php echo implode('</b>, <b>', $copy_files_enc) ?></b></p>
 			<p class="break-word">Source folder: <?php echo fm_enc(fm_convert_win(FM_ROOT_PATH . '/' . FM_PATH)) ?><br>
