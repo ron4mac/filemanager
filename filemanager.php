@@ -11,7 +11,7 @@ $use_auth = true;
 // Users: array('Username' => 'PasswordHash', 'Username2' => 'PasswordHash2', ...)
 // Usernames lower case
 if (!isset($auth_users)) $auth_users = [
-	'fm_admin' => '$2y$10$xDBQTsc8akSBvvXJzwUDF.RONP3JaokMcQt4eAi6o67dmq2.smoQW',	// password = fm_admin
+	'fm_admin' => '$2y$10$xDBQTsc8akSBvvXJzwUDF.RONP3JaokMcQt4eAi6o67dmq2.smoQW'	// password = fm_admin
 ];
 
 // Enable highlight.js (https://highlightjs.org/) on view's page
