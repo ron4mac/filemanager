@@ -625,7 +625,7 @@ if (isset($_GET['upload'])) {
 	<div class="path">
 		<p><b>Uploading files</b></p>
 		<p class="break-word">Destination folder: <?php echo fm_enc(fm_convert_win(FM_ROOT_PATH . '/' . FM_PATH)) ?></p>
-		<form action="filemanager.php?p=<?php echo fm_enc(FM_PATH) ?>" class="dropzone" id="filedrop"></form>
+		<form action="<?php echo basename(FM_SELF_URL).'?p='.urlencode(FM_PATH); ?>" class="dropzone" id="filedrop"></form>
 	</div>
 	<script>
 	var redirURL = "<?php echo FM_SELF_URL . '?p=' . urlencode(FM_PATH) ?>";
