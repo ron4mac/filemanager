@@ -168,6 +168,26 @@ unset($p, $use_auth, $iconv_input_encoding, $use_highlightjs, $highlightjs_style
 
 /*************************** ACTIONS ***************************/
 
+//AJAX file upload (dropzone)
+if (isset($_FILES['upfile'])) {
+	$path = FM_ROOT_PATH;
+	if (FM_PATH != '') {
+		$path .= '/' . FM_PATH;
+	}
+	$file = $_FILES['upfile'];
+	$tmp_name = $file['tmp_name'];
+	if (empty($file['error']) && !empty($tmp_name) && $tmp_name != 'none') {
+		if (!move_uploaded_file($tmp_name, $path . '/' . $file['name'])) {
+			http_response_code(409);
+			die('Failed to place file');
+		}
+	} else {
+		http_response_code(409);
+		die('Upload failure: '.$file['error']);
+	}
+	exit;
+}
+
 //AJAX Request
 if (isset($_POST['ajax'])) {
 
@@ -392,39 +412,6 @@ if (isset($_GET['dl'])) {
 	}
 }
 
-// Upload
-if (isset($_POST['upl'])) {
-	$path = FM_ROOT_PATH;
-	if (FM_PATH != '') {
-		$path .= '/' . FM_PATH;
-	}
-
-	$errors = 0;
-	$uploads = 0;
-	$total = count($_FILES['upload']['name']);
-
-	for ($i = 0; $i < $total; $i++) {
-		$tmp_name = $_FILES['upload']['tmp_name'][$i];
-		if (empty($_FILES['upload']['error'][$i]) && !empty($tmp_name) && $tmp_name != 'none') {
-			if (move_uploaded_file($tmp_name, $path . '/' . $_FILES['upload']['name'][$i])) {
-				$uploads++;
-			} else {
-				$errors++;
-			}
-		}
-	}
-
-	if ($errors == 0 && $uploads > 0) {
-		fm_set_msg(sprintf('All files uploaded to <b>%s</b>', fm_enc($path)));
-	} elseif ($errors == 0 && $uploads == 0) {
-		fm_set_msg('Nothing uploaded', 'alert');
-	} else {
-		fm_set_msg(sprintf('Error while uploading files. Uploaded files: %s', $uploads), 'error');
-	}
-
-	fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
-}
-
 // Mass deleting
 if (isset($_POST['group'], $_POST['delete'])) {
 	$path = FM_ROOT_PATH;
@@ -632,27 +619,34 @@ if (!empty($folders)) {
 
 // upload form
 if (isset($_GET['upload'])) {
-	fm_show_header(); // HEADER
+	fm_show_header(['//cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.0/min/dropzone.min.css'],['//cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.0/min/dropzone.min.js']); // HEADER
 	fm_show_nav_path(FM_PATH); // current path
 	?>
 	<div class="path">
 		<p><b>Uploading files</b></p>
 		<p class="break-word">Destination folder: <?php echo fm_enc(fm_convert_win(FM_ROOT_PATH . '/' . FM_PATH)) ?></p>
-		<form action="" method="post" enctype="multipart/form-data">
-			<input type="hidden" name="p" value="<?php echo fm_enc(FM_PATH) ?>">
-			<input type="hidden" name="upl" value="1">
-			<input type="file" name="upload[]"><br>
-			<input type="file" name="upload[]"><br>
-			<input type="file" name="upload[]"><br>
-			<input type="file" name="upload[]"><br>
-			<input type="file" name="upload[]"><br>
-			<br>
-			<p>
-				<button class="btn"><i class="fa fa-paper-plane-o" aria-hidden="true"></i> Upload</button> &nbsp;
-				<b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="fa fa-times" aria-hidden="true"></i> Cancel</a></b>
-			</p>
-		</form>
+		<form action="filemanager.php?p=<?php echo fm_enc(FM_PATH) ?>" class="dropzone" id="filedrop"></form>
 	</div>
+	<script>
+	var redirURL = "<?php echo FM_SELF_URL . '?p=' . urlencode(FM_PATH) ?>";
+	var uperrcnt = 0;
+	Dropzone.options.filedrop = {
+		paramName: "upfile",
+		dictDefaultMessage: 'Drop some files here to upload<br>(or click to select)',
+		createImageThumbnails: false,
+		init: function() {
+			this.on('error', function(file, emsg, xhr) {
+				uperrcnt++;
+			});
+			this.on('queuecomplete', function() {
+				if (uperrcnt) {
+					uperrcnt = 0;
+					setTimeout(function(){alert("There were some upload errors");}, 2000);
+				} else setTimeout(function(){window.location = redirURL;}, 2000);
+			});
+		}
+	};
+	</script>
 	<?php
 	fm_show_footer();
 	exit;
@@ -1521,7 +1515,7 @@ function fm_show_message()
 /**
  * Show page header
  */
-function fm_show_header()
+function fm_show_header($csss=[], $jss=[])
 {
 	header("Content-Type: text/html; charset=utf-8");
 	header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
@@ -1581,6 +1575,12 @@ p.message.done{opacity:0;padding:0;margin:0;height:0};
 <?php if (isset($_GET['view']) && FM_USE_HIGHLIGHTJS): ?>
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/styles/<?php echo FM_HIGHLIGHTJS_STYLE ?>.min.css">
 <?php endif; ?>
+<?php foreach ($csss as $css): ?>
+<link rel="stylesheet" href="<?php echo $css ?>">
+<?php endforeach; ?>
+<?php foreach ($jss as $js): ?>
+<script src="<?php echo $js ?>"></script>
+<?php endforeach; ?>
 </head>
 <body>
 <div id="wrapper">
